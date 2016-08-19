@@ -14,7 +14,7 @@ I have used "python amalgamate.py" to generate two .h and one .cpp file for json
 2. Inherit the BasicBolt class and implement the Process method
 3. "main" function calls this class instance and call the run() method
 4. Write a Java Topology file and put the file at <location of storm starter>/src/jvm/org/apache/storm/starter
-5. In Java Topology file: Presently it is not possible to run binaries directly from storm toplogy, thus create a bash file
+5. In Java Topology file: Presently it is not possible to run binaries directly from storm toplogy, thus create a bash file.
    This bash file should run the binary created earlier from cpp files. For example: in CPPWordCount.java line 43:
 			super("bash","split_sentence.sh");
 6. Copy the bash script (eg. split_sentence.sh) to <location of storm starter>/target/classes/resources/ 
@@ -23,7 +23,8 @@ I have used "python amalgamate.py" to generate two .h and one .cpp file for json
 Compiling codes
 ===============
 
-For compling this example
+For compling this example:
+Makefile
 
 
 Acknowledgments
