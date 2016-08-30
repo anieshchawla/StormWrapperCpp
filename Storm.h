@@ -231,6 +231,21 @@ namespace storm
 		std::ofstream temp(full_name.str().c_str());
 		temp.close();
 	}
+	//This I am adding specifically so that it doesn't send its PID to parent
+	//I observed that in v1.0.1 this was giving error, hence removing it
+	inline void SendPidSpout(const std::string &dir_name)
+	{
+		pid_t current_pid = getpid();
+		Json::Value v;
+		v["pid"] = current_pid;
+		//SendMsgToParent(v);
+		std::stringstream full_name;
+		// TODO: In the future, we might consider doing this properly.
+		full_name << dir_name << "/" << current_pid;
+		std::ofstream temp(full_name.str().c_str());
+		temp.close();
+	}
+
 
 	inline void EmitSpout(Tuple &tuple, const std::string &stream,
 			int task, std::string id = "", bool needTaskIds = true)
@@ -355,12 +370,21 @@ namespace storm
 			std::make_pair(setupInfo["conf"], setupInfo["context"]);
 		return ret;
 	}
-
+	//For Spout I observed in 1.0.1 that SendPid to parent doesn't work
+	//it gives errorString error, when I removed that it started working
+	inline std::pair<Json::Value, Json::Value> InitComponentSpout()
+	{
+		Json::Value setupInfo = ReadMsg();
+		SendPidSpout(setupInfo["pidDir"].asString());
+		std::pair<Json::Value, Json::Value> ret =
+			std::make_pair(setupInfo["conf"], setupInfo["context"]);
+		return ret;
+	}
 	// Base spout class.  All C++ spouts should inherit from this class.
 	class Spout
 	{
 		public:
-			Spout();
+			//Spout();
 			virtual void Initialize(Json::Value conf, Json::Value context) = 0;
 			// Read the next tuple and write it to stdout.
 			virtual void NextTuple() = 0;
@@ -375,7 +399,7 @@ namespace storm
 			void Run()
 			{
 				Mode = SPOUT;
-				std::pair<Json::Value, Json::Value> conf_context = InitComponent();
+				std::pair<Json::Value, Json::Value> conf_context = InitComponentSpout();
 				Initialize(conf_context.first, conf_context.second);
 				Json::Value msg;
 				std::string command;
@@ -384,7 +408,7 @@ namespace storm
 					msg = ReadCommand();
 					command = msg["command"].asString();
 					if (command == "next")
-						NextTuple();
+						this->NextTuple();
 					else if (command == "ack")
 						this->Ack(msg);
 					else if (command == "fail")

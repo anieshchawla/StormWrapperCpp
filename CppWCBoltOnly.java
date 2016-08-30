@@ -21,8 +21,6 @@ import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.StormSubmitter;
 import org.apache.storm.task.ShellBolt;
-import org.apache.storm.spout.ShellSpout;
-import org.apache.storm.topology.IRichSpout;
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.IRichBolt;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -56,21 +54,7 @@ public class CPPWordCount{
       return null;
     }
   }
-	
-  public static class RandomSentence extends ShellSpout implements IRichSpout {
-	public RandomSentence(){
-	 super("bash","random_sentence.sh");
-	}
-	@Override
-	public void declareOutputFields(OutputFieldsDeclarer declarer){
-	declarer.declare(new Fields("word"));
-	}
-	
-	@Override
-	public Map<String, Object> getComponentConfiguration(){
-	  return null;
-	}
- }
+
   public static class WordCount extends BaseBasicBolt {
     Map<String, Integer> counts = new HashMap<String, Integer>();
 
@@ -95,7 +79,7 @@ public class CPPWordCount{
 
     TopologyBuilder builder = new TopologyBuilder();
 
-    builder.setSpout("spout", new RandomSentence(), 5);
+    builder.setSpout("spout", new RandomSentenceSpout(), 5);
 
     builder.setBolt("split", new SplitSentence(), 8).shuffleGrouping("spout");
     builder.setBolt("count", new WordCount(), 12).fieldsGrouping("split", new Fields("word"));
